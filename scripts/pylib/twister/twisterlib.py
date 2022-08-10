@@ -478,6 +478,7 @@ class BinaryHandler(Handler):
         super().__init__(instance, type_str)
 
         self.call_west_flash = False
+        self.call_make_run_robotbench = False
 
         # Tool options
         self.valgrind = False
@@ -2443,6 +2444,7 @@ class ProjectBuilder(FilterBuilder):
             if find_executable("renode"):
                 instance.handler = BinaryHandler(instance, "renode")
                 instance.handler.pid_fn = os.path.join(instance.build_dir, "renode.pid")
+                instance.handler.call_make_run = True
         elif instance.platform.simulation == "robotbench":
             if find_executable("renode-test"):
                 instance.handler = BinaryHandler(instance, "robotbench")

@@ -1980,7 +1980,6 @@ __syscall void *k_queue_peek_tail(struct k_queue *queue);
 
 /** @} */
 
-#ifdef CONFIG_USERSPACE
 /**
  * @brief futex structure
  *
@@ -2005,6 +2004,8 @@ struct z_futex_data {
 	_wait_q_t wait_q;
 	struct k_spinlock lock;
 };
+
+#ifdef CONFIG_USERSPACE
 
 #define Z_FUTEX_DATA_INITIALIZER(obj) \
 	{ \

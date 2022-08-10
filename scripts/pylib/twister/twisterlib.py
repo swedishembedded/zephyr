@@ -520,6 +520,7 @@ class BinaryHandler(Handler):
         super().__init__(instance, type_str)
 
         self.call_west_flash = False
+        self.call_make_run_robotbench = False
 
         # Tool options
         self.valgrind = False
@@ -626,6 +627,23 @@ class BinaryHandler(Handler):
         if self.ubsan:
             env["UBSAN_OPTIONS"] = "log_path=stdout:halt_on_error=1:" + \
                                   env.get("UBSAN_OPTIONS", "")
+
+        # For some reason twister hangs with readline returning empty string unless we do it like this
+        # So we have to call the process manually
+        if self.call_make_run_robotbench:
+            command = [self.generator_cmd, "run_robotbench"]
+            with subprocess.Popen(command, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE, cwd=self.build_dir, env=env) as proc:
+                out, err = proc.communicate(timeout=60);
+                if proc.returncode != 0:
+                    self.instance.status = "failed";
+                    self.instance.execution_time = time.time() - start_time;
+                    self.instance.reason = "FAILED"
+                else:
+                    self.instance.status = "passed";
+                    self.instance.execution_time = time.time() - start_time;
+                    self.instance.reason = "PASSED"
+                return;
 
         with subprocess.Popen(command, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, cwd=self.build_dir, env=env) as proc:
@@ -2212,7 +2230,7 @@ class TestInstance(DisablePyTestCollectionMixin):
 
         target_ready = bool(self.testsuite.type == "unit" or \
                         self.platform.type == "native" or \
-                        self.platform.simulation in ["mdb-nsim", "nsim", "renode", "qemu", "tsim", "armfvp", "xt-sim"] or \
+                        self.platform.simulation in ["mdb-nsim", "nsim", "renode", "robotbench", "qemu", "tsim", "armfvp", "xt-sim"] or \
                         filter == 'runnable')
 
         if self.platform.simulation == "nsim":
@@ -2225,6 +2243,10 @@ class TestInstance(DisablePyTestCollectionMixin):
 
         if self.platform.simulation == "renode":
             if not find_executable("renode"):
+                target_ready = False
+
+        if self.platform.simulation == "robotbench":
+            if not find_executable("renode-test"):
                 target_ready = False
 
         if self.platform.simulation == "tsim":
@@ -2651,6 +2673,10 @@ class ProjectBuilder(FilterBuilder):
                 instance.handler = BinaryHandler(instance, "renode")
                 instance.handler.pid_fn = os.path.join(instance.build_dir, "renode.pid")
                 instance.handler.call_make_run = True
+        elif instance.platform.simulation == "robotbench":
+            if find_executable("renode-test"):
+                instance.handler = BinaryHandler(instance, "robotbench")
+                instance.handler.call_make_run_robotbench = True
         elif instance.platform.simulation == "tsim":
             instance.handler = BinaryHandler(instance, "tsim")
             instance.handler.call_make_run = True

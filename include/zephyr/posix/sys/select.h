@@ -7,7 +7,6 @@
 #define ZEPHYR_INCLUDE_POSIX_SYS_SELECT_H_
 
 #include <zephyr/net/socket_select.h>
-#include <sys/_timeval.h>
 
 #define fd_set zsock_fd_set
 #define FD_SETSIZE ZSOCK_FD_SETSIZE

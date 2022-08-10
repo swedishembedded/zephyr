@@ -237,7 +237,7 @@ static void net_tc_rx_stats_priority_setup(struct net_if *iface,
 #endif
 
 #if NET_TC_RX_COUNT > 0
-static void tc_rx_handler(struct k_fifo *fifo)
+static void tc_rx_handler(struct k_fifo *fifo, void *p2, void *p3)
 {
 	struct net_pkt *pkt;
 

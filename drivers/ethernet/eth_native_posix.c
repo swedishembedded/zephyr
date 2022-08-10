@@ -370,7 +370,7 @@ static int read_data(struct eth_context *ctx, int fd)
 	return 0;
 }
 
-static void eth_rx(struct eth_context *ctx)
+static void eth_rx(struct eth_context *ctx, void *p2, void *p3)
 {
 	LOG_DBG("Starting ZETH RX thread");
 
